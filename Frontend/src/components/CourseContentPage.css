@@ -1,0 +1,130 @@
+.course-content-container {
+    display: flex;
+    flex-direction: row;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.toc {
+    width: 25%;
+    padding: 20px;
+    background-color: #ffffff;
+    border-right: 1px solid #dddddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+.toc h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #007bff;
+}
+
+.toc h3 {
+    margin-bottom: 5px;
+    font-size: 18px;
+    color: #0056b3;
+}
+
+.toc ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.toc li {
+    cursor: pointer;
+    margin-bottom: 5px;
+    color: #007bff;
+    transition: color 0.3s;
+}
+
+.toc li:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+.course-content-page {
+    width: 75%;
+    padding: 20px;
+}
+
+.header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    font-size: 24px;
+}
+
+.course-content h2 {
+    color: #0056b3;
+    margin-bottom: 10px;
+    font-size: 22px;
+}
+
+.course-content h3 {
+    color: #007bff;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.course-content div {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    height: auto; /* Adjust height to fit content */
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pagination button:disabled {
+    background-color: #cccccc;
+}
+
+.pagination button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.pagination span {
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .course-content-container {
+        flex-direction: column;
+    }
+    .toc {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #dddddd;
+        margin-bottom: 20px;
+    }
+    .course-content-page {
+        width: 100%;
+    }
+}

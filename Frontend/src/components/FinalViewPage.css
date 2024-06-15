@@ -1,0 +1,107 @@
+.final-view-page {
+    max-width: 2000px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.final-view-page h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.chapters-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.chapter-card {
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    flex: 1 1 45%;  /* Adjust to ensure two blocks per row with spacing */
+    box-sizing: border-box;
+    height: auto;  /* Adjust height to fit content */
+    overflow: hidden; /* Hide overflowing content */
+}
+
+.chapter-title {
+    background-color: #007bff;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 8px 8px 0 0;
+    margin: -20px -20px 10px -20px;
+    text-align: center;
+}
+
+.subchapter-card {
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    height: auto;
+    overflow-y: auto;
+}
+
+.subchapter-title {
+    color: #0056b3;
+    margin-bottom: 10px;
+}
+
+.subchapter-content {
+    max-height: 150px; /* Keep content within the block size */
+    font-size: 14px;  /* Adjust the content text size */
+}
+
+button {
+    display: block;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 20px auto;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.course-content {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: left; /* Align text to the left for better readability */
+}
+
+.pagination {
+    display: flex;
+    justify-content: center; /* Center the pagination controls */
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    margin: 0 10px;
+}
+
+.pagination span {
+    margin: 0 10px;
+}
+
+@media (max-width: 768px) {
+    .chapter-card {
+        flex: 1 1 100%; /* One block per row on smaller screens */
+    }
+}
