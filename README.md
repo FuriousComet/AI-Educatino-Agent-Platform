@@ -1,1 +1,1 @@
-# AI-Educatino-Agent-Platform
+# AI-Education-Platform
