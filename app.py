@@ -12,14 +12,11 @@ CORS(app)  # Enable CORS for all routes
 
 openai.api_key = config.OPENAI_KEY
 
-OPENAI_API_KEY = config.OPENAI_KEY
-
 # Proxy settings
 proxies = {
     "http": "http://14a2a8e06348d:1842948cf0@161.77.82.100:12323",
     "https": "http://14a2a8e06348d:1842948cf0@161.77.82.100:12323",
 }
-
 
 def send_request_with_proxy(endpoint, headers, payload):
     for _ in range(5):  # Retry up to 5 times
@@ -35,6 +32,23 @@ def send_request_with_proxy(endpoint, headers, payload):
             break
     raise requests.exceptions.ProxyError("Failed to connect to the proxy after multiple attempts.")
 
+def generate_image(prompt):
+    payload = {
+        "model": "dall-e-3",
+        "prompt": prompt,
+        "size": "1024x1024",
+        "quality": "standard",
+        "n": 1
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {openai.api_key}"
+    }
+    endpoint = "https://api.openai.com/v1/images/generations"
+    response = send_request_with_proxy(endpoint, headers, payload)
+    image_url = response['data'][0]['url']
+    return image_url
+
 @app.route('/generate-chapters', methods=['POST'])
 def generate_chapters():
     data = request.json
@@ -45,7 +59,7 @@ def generate_chapters():
         {"role": "user", "content": "generate with 4 space indents"},
     ]
     payload = {
-        "model": "gpt-4o",
+        "model": "gpt-4",
         "messages": request_payload,
         "max_tokens": 4000
     }
@@ -65,13 +79,13 @@ def generate_content():
     chapter_name = data['chapter_name']
     subchapter_name = data['subchapter_name']
     prompt = data['prompt']
-    prompt_message = f"Generate the content for a subchapter in a course. The chapter title is {chapter_name}. The title of the subchapter is {subchapter_name}. The course is about {prompt}. Please only include the requested data. Format the content in HTML."
+    prompt_message = f"Generate the content for a subchapter in a course. The chapter title is {chapter_name}. The title of the subchapter is {subchapter_name}. The course is about {prompt}. Please only include the requested data. Format the content in HTML. Additionally, include suggestions for images where appropriate by wrapping the suggestions in [IMAGE: ...]."
     request_payload = [
         {"role": "system", "content": prompt_message},
         {"role": "user", "content": "Do not include the chapter title, the subchapter title, or the course title in the data, only the chapter content."},
     ]
     payload = {
-        "model": "gpt-4o",
+        "model": "gpt-4",
         "messages": request_payload,
         "max_tokens": 4000
     }
@@ -83,7 +97,16 @@ def generate_content():
     response = send_request_with_proxy(endpoint, headers, payload)
     gpt_response = response['choices'][0]['message']['content']
     print("Content Response:", gpt_response)  # Debug response
-    return jsonify(gpt_response)
+
+    # Process the content to generate images where needed
+    content_parts = gpt_response.split('[IMAGE:')
+    final_content = content_parts[0]
+    for part in content_parts[1:]:
+        image_prompt, rest_of_content = part.split(']', 1)
+        image_url = generate_image(image_prompt.strip())
+        final_content += f'<img src="{image_url}" alt="{image_prompt.strip()}"/>' + rest_of_content
+
+    return jsonify(final_content)
 
 @app.route('/generate-exam', methods=['POST'])
 def generate_exam():
@@ -95,9 +118,9 @@ def generate_exam():
     prompt_message = f"""
     Generate an exam for the subchapter '{subchapter_name}' in the chapter '{chapter_name}' of the course on '{prompt}'. 
     Include three types of questions:
-    1. Selection problems (multiple-choice) - 3 questions
-    2. Fill-in-the-blank problems - 3 questions
-    3. Entry problems (short answer) - 3 questions
+    1. Selection problems (multiple-choice) - 5 questions
+    2. Fill-in-the-blank problems - 5 questions
+    3. Entry problems (short answer) - 5 questions
 
     Format the response as a JSON array with the following structure:
     [
