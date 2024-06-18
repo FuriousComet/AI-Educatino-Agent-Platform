@@ -84,6 +84,13 @@
     height: auto; /* Adjust height to fit content */
 }
 
+.course-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
 .pagination {
     display: flex;
     justify-content: space-between;
