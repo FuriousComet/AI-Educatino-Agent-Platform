@@ -11,43 +11,32 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 openai.api_key = config.OPENAI_KEY
+serpapi_api_key = config.SERPAPI_KEY
 
-# Proxy settings
-proxies = {
-    "http": "http://14a2a8e06348d:1842948cf0@161.77.82.100:12323",
-    "https": "http://14a2a8e06348d:1842948cf0@161.77.82.100:12323",
-}
-
-def send_request_with_proxy(endpoint, headers, payload):
+def send_request(endpoint, headers, payload):
     for _ in range(5):  # Retry up to 5 times
         try:
-            response = requests.post(endpoint, headers=headers, json=payload, proxies=proxies, stream=True)
+            response = requests.post(endpoint, headers=headers, json=payload, stream=True)
             response.raise_for_status()
             return response.json()
-        except requests.exceptions.ProxyError as e:
-            print("Proxy Error. Retrying in 5 seconds...", e)
-            time.sleep(5)
         except requests.exceptions.RequestException as e:
             print("Request Error:", e)
-            break
-    raise requests.exceptions.ProxyError("Failed to connect to the proxy after multiple attempts.")
+            time.sleep(5)
+    raise requests.exceptions.RequestException("Failed to connect after multiple attempts.")
 
-def generate_image(prompt):
-    payload = {
-        "model": "dall-e-3",
-        "prompt": prompt,
-        "size": "1024x1024",
-        "quality": "standard",
-        "n": 1
+def search_image(query):
+    params = {
+        "engine": "google",
+        "q": query,
+        "tbm": "isch",
+        "api_key": serpapi_api_key
     }
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {openai.api_key}"
-    }
-    endpoint = "https://api.openai.com/v1/images/generations"
-    response = send_request_with_proxy(endpoint, headers, payload)
-    image_url = response['data'][0]['url']
-    return image_url
+    response = requests.get("https://serpapi.com/search", params=params)
+    if response.status_code == 200:
+        images = response.json().get('images_results', [])
+        if images:
+            return images[0]['original']
+    return None
 
 @app.route('/generate-chapters', methods=['POST'])
 def generate_chapters():
@@ -68,7 +57,7 @@ def generate_chapters():
         "Authorization": f"Bearer {openai.api_key}"
     }
     endpoint = "https://api.openai.com/v1/chat/completions"
-    response = send_request_with_proxy(endpoint, headers, payload)
+    response = send_request(endpoint, headers, payload)
     gpt_response = response['choices'][0]['message']['content']
     print("Chapters Response:", gpt_response)  # Debug response
     return jsonify(gpt_response)
@@ -94,7 +83,7 @@ def generate_content():
         "Authorization": f"Bearer {openai.api_key}"
     }
     endpoint = "https://api.openai.com/v1/chat/completions"
-    response = send_request_with_proxy(endpoint, headers, payload)
+    response = send_request(endpoint, headers, payload)
     gpt_response = response['choices'][0]['message']['content']
     print("Content Response:", gpt_response)  # Debug response
 
@@ -103,8 +92,11 @@ def generate_content():
     final_content = content_parts[0]
     for part in content_parts[1:]:
         image_prompt, rest_of_content = part.split(']', 1)
-        image_url = generate_image(image_prompt.strip())
-        final_content += f'<img src="{image_url}" alt="{image_prompt.strip()}"/>' + rest_of_content
+        image_url = search_image(image_prompt.strip())
+        if image_url:
+            final_content += f'<img src="{image_url}" alt="{image_prompt.strip()}"/>' + rest_of_content
+        else:
+            final_content += f'[IMAGE: {image_prompt.strip()}]' + rest_of_content
 
     return jsonify(final_content)
 
@@ -160,7 +152,7 @@ def generate_exam():
     }
     
     endpoint = "https://api.openai.com/v1/chat/completions"
-    response = send_request_with_proxy(endpoint, headers, payload)
+    response = send_request(endpoint, headers, payload)
     gpt_response = response['choices'][0]['message']['content']
     print("Exam Questions Response:", gpt_response)  # Debug response
     
@@ -202,7 +194,7 @@ def evaluate_exam():
             "Authorization": f"Bearer {openai.api_key}"
         }
         endpoint = "https://api.openai.com/v1/chat/completions"
-        response = send_request_with_proxy(endpoint, headers, payload)
+        response = send_request(endpoint, headers, payload)
         explanation_response = response['choices'][0]['message']['content']
         explanations[question['question']] = explanation_response
 
