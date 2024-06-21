@@ -100,6 +100,53 @@ def generate_content():
 
     return jsonify(final_content)
 
+@app.route('/dig-deeper', methods=['POST'])
+def dig_deeper():
+    data = request.json
+    chapter_name = data['chapter_name']
+    subchapter_name = data['subchapter_name']
+    prompt = data['prompt']
+    prompt_message = f"""
+    Generate a more detailed and comprehensive content for the subchapter '{subchapter_name}' in the chapter '{chapter_name}' of the course on '{prompt}'. 
+    Include:
+    1. Detailed explanations of key concepts
+    2. Examples and case studies
+    3. Step-by-step guides
+    4. Visual aids such as diagrams or images
+
+    Format the content in HTML and include suggestions for images where appropriate by wrapping the suggestions in [IMAGE: ...].
+    """
+    request_payload = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt_message},
+    ]
+    payload = {
+        "model": "gpt-4",
+        "messages": request_payload,
+        "max_tokens": 8000
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {openai.api_key}"
+    }
+    endpoint = "https://api.openai.com/v1/chat/completions"
+    response = send_request(endpoint, headers, payload)
+    gpt_response = response['choices'][0]['message']['content']
+    print("Detailed Content Response:", gpt_response)  # Debug response
+
+    # Process the detailed content to generate images where needed
+    content_parts = gpt_response.split('[IMAGE:')
+    final_content = content_parts[0]
+    for part in content_parts[1:]:
+        image_prompt, rest_of_content = part.split(']', 1)
+        image_url = search_image(image_prompt.strip())
+        if image_url:
+            final_content += f'<img src="{image_url}" alt="{image_prompt.strip()}"/>' + rest_of_content
+        else:
+            final_content += f'[IMAGE: {image_prompt.strip()}]' + rest_of_content
+
+    return jsonify(final_content)
+
 @app.route('/generate-exam', methods=['POST'])
 def generate_exam():
     data = request.json
