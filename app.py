@@ -60,7 +60,19 @@ def generate_chapters():
     response = send_request(endpoint, headers, payload)
     gpt_response = response['choices'][0]['message']['content']
     print("Chapters Response:", gpt_response)  # Debug response
-    return jsonify(gpt_response)
+    
+    try:
+        json_response = json.loads(gpt_response)
+        # Ensure that the response is in the correct format
+        if isinstance(json_response, dict):
+            for chapter, subchapters in json_response.items():
+                if not isinstance(subchapters, list):
+                    raise ValueError(f"Subchapters for {chapter} are not in a list format")
+    except (json.JSONDecodeError, ValueError) as e:
+        print(f"Failed to decode JSON response: {e}")
+        return jsonify({"error": "Failed to decode JSON response from OpenAI"}), 500
+
+    return jsonify(json_response)
 
 @app.route('/generate-content', methods=['POST'])
 def generate_content():

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import spinner from './spinner.gif'; // Make sure the path is correct
 
 const CourseOutlinePage = ({ prompt, navigateTo, setChapters }) => {
     const [outline, setOutline] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchOutline = async () => {
+            setIsLoading(true);
             try {
                 const response = await fetch('http://localhost:5000/generate-chapters', {
                     method: 'POST',
@@ -17,12 +20,23 @@ const CourseOutlinePage = ({ prompt, navigateTo, setChapters }) => {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
-                const parsedOutline = JSON.parse(data);
-                setOutline(parsedOutline);
-                setChapters(parsedOutline); // Set the chapters state in the parent component
-                console.log("Fetched Outline:", parsedOutline); // Debug output
+                // Ensure that data is in the correct format
+                if (typeof data === 'object' && data !== null) {
+                    for (const [chapterName, subchapters] of Object.entries(data)) {
+                        if (!Array.isArray(subchapters)) {
+                            throw new Error(`Subchapters for ${chapterName} are not in a list format`);
+                        }
+                    }
+                    setOutline(data);
+                    setChapters(data); // Set the chapters state in the parent component
+                } else {
+                    throw new Error('Invalid data format');
+                }
+                setIsLoading(false);
+                console.log("Fetched Outline:", data); // Debug output
             } catch (error) {
                 console.error('There was an error fetching the outline:', error);
+                setIsLoading(false);
             }
         };
         fetchOutline();
@@ -35,7 +49,11 @@ const CourseOutlinePage = ({ prompt, navigateTo, setChapters }) => {
     return (
         <div className="course-outline-page">
             <h1>Course Outline for "{prompt}"</h1>
-            {outline ? (
+            {isLoading ? (
+                <div className="loading">
+                    <img src={spinner} alt="Loading..." />
+                </div>
+            ) : outline ? (
                 <div>
                     {Object.entries(outline).map(([chapterName, subchapters], chapterIndex) => (
                         <div key={chapterIndex} className="chapter">

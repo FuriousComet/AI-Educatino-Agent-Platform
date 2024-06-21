@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './CourseContentPage.css';
+import spinner from './spinner.gif'; // Ensure this path is correct
 
 const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
     const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
@@ -83,7 +84,7 @@ const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
                         <ul>
                             {chapters[chapterName].map((subchapter, subchapterIndex) => (
                                 <li key={subchapterIndex} onClick={() => goToCourse(chapterIndex, subchapterIndex)}>
-                                    {chapterName} - Course {subchapterIndex + 1}: {subchapter}
+                                    {subchapter}
                                 </li>
                             ))}
                         </ul>
@@ -96,12 +97,18 @@ const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
                 </div>
                 <div className="course-content">
                     <h2>{currentChapterName}</h2>
-                    <h3>Course {currentSubchapterIndex + 1}: {currentSubchapter}</h3>
-                    <div
-                        dangerouslySetInnerHTML={{
-                            __html: detailedContent || content[`${currentChapterName}-${currentSubchapter}`] || '<p>Loading...</p>'
-                        }}
-                    />
+                    <h3>{currentSubchapter}</h3>
+                    {isLoading ? (
+                        <div className="loading">
+                            <img src={spinner} alt="Loading..." className="spinner" />
+                        </div>
+                    ) : (
+                        <div
+                            dangerouslySetInnerHTML={{
+                                __html: detailedContent || content[`${currentChapterName}-${currentSubchapter}`] || '<p>Loading...</p>'
+                            }}
+                        />
+                    )}
                     <button onClick={handleTakeExam} className="exam-button">Take Exam</button>
                     <button onClick={handleDigDeeper} className="dig-deeper-button" disabled={isLoading}>
                         {isLoading ? 'Loading...' : 'Dig Deeper'}

@@ -142,6 +142,17 @@
     background-color: #218838;
 }
 
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading .spinner {
+    width: 50px;  /* Adjust this value to make the spinner smaller */
+    height: 50px;
+}
+
 @media (max-width: 768px) {
     .course-content-container {
         flex-direction: column;
