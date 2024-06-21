@@ -21,6 +21,7 @@ const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
             setCurrentChapterIndex(currentChapterIndex + 1);
             setCurrentSubchapterIndex(0);
         }
+        setDetailedContent(null);  // Reset detailed content when navigating
     };
 
     const handlePrev = () => {
@@ -30,11 +31,13 @@ const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
             setCurrentChapterIndex(currentChapterIndex - 1);
             setCurrentSubchapterIndex(chapters[chapterNames[currentChapterIndex - 1]].length - 1);
         }
+        setDetailedContent(null);  // Reset detailed content when navigating
     };
 
     const goToCourse = (chapterIndex, subchapterIndex) => {
         setCurrentChapterIndex(chapterIndex);
         setCurrentSubchapterIndex(subchapterIndex);
+        setDetailedContent(null);  // Reset detailed content when navigating
     };
 
     const handleTakeExam = () => {
