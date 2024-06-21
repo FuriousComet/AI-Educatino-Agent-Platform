@@ -4,6 +4,8 @@ import './CourseContentPage.css';
 const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
     const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
     const [currentSubchapterIndex, setCurrentSubchapterIndex] = useState(0);
+    const [detailedContent, setDetailedContent] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     if (!chapters) return <p>No course content available</p>;
 
@@ -39,6 +41,32 @@ const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
         navigateTo("exam", { chapterName: currentChapterName, subchapterName: currentSubchapter });
     };
 
+    const handleDigDeeper = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('http://localhost:5000/dig-deeper', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    chapter_name: currentChapterName, 
+                    subchapter_name: currentSubchapter, 
+                    prompt 
+                })
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setDetailedContent(data);
+            setIsLoading(false);
+        } catch (error) {
+            console.error('There was an error fetching the detailed content:', error);
+            setIsLoading(false);
+        }
+    };
+
     const currentPage = currentChapterIndex * subchapters.length + currentSubchapterIndex + 1;
     const totalPages = chapterNames.reduce((acc, chapter) => acc + chapters[chapter].length, 0);
 
@@ -68,10 +96,13 @@ const CourseContentPage = ({ prompt, chapters, content, navigateTo }) => {
                     <h3>Course {currentSubchapterIndex + 1}: {currentSubchapter}</h3>
                     <div
                         dangerouslySetInnerHTML={{
-                            __html: content[`${currentChapterName}-${currentSubchapter}`] || '<p>Loading...</p>'
+                            __html: detailedContent || content[`${currentChapterName}-${currentSubchapter}`] || '<p>Loading...</p>'
                         }}
                     />
                     <button onClick={handleTakeExam} className="exam-button">Take Exam</button>
+                    <button onClick={handleDigDeeper} className="dig-deeper-button" disabled={isLoading}>
+                        {isLoading ? 'Loading...' : 'Dig Deeper'}
+                    </button>
                 </div>
                 <div className="pagination">
                     <button onClick={handlePrev} disabled={currentChapterIndex === 0 && currentSubchapterIndex === 0}>
